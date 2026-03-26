@@ -1,8 +1,8 @@
 """
-Script to fetch daily transaction counts from a ClickHouse database.
+Script to fetch daily total transfer amount from a ClickHouse database.
 
 Usage:
-python script.py [--sort-by {day, total_count}] [--descending]
+python script.py [--sort-by {day, total_amount}] [--descending]
 
 """
 
@@ -23,8 +23,8 @@ def main():
     args = parser.parse_args()
 
     # Test if the input argument is valid
-    if args.sort_by not in ('day', 'total_count'):
-        print("Error: --sort-by must be 'day' or 'total_count'")
+    if args.sort_by not in ('day', 'total_amount'):
+        print("Error: --sort-by must be 'day' or 'total_amount'")
         sys.exit(1)
 
     # Connect to ClickHouse
@@ -32,9 +32,9 @@ def main():
 
     # Construct the SQL query
     query = f"""
-        SELECT toDate(transaction_time) AS day, COUNT(*) AS total_count
-        FROM olap_db.transactions
-        GROUP BY day
+        SELECT toDate(transaction_time) AS day, SUM(transfer_amount) AS total_amount 
+        FROM olap_db.transactions 
+        GROUP BY day 
         ORDER BY {args.sort_by} {"ASC" if args.descending else "DESC"};
     """
 
