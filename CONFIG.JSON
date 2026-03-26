@@ -1,0 +1,11 @@
+{
+    "clickhouse": {
+        "host": "localhost",
+        "port": 9000,
+        "user": "admin",
+        "password": "admin",
+        "database": "olap_db"
+    },
+    "batch_size": 1000000,
+    "input_dir": "json_files"
+}

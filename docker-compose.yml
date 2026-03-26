@@ -1,0 +1,22 @@
+version: '3.8'
+
+volumes:
+  clickhouse-data:
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: olap_db
+    ports:
+      - "9000:9000" # Native protocol
+      - "8123:8123" # HTTP interface
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse # Persist data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql # Run init script on startup
+    environment:
+      CLICKHOUSE_DB: olap_db
+      CLICKHOUSE_USER: admin
+      CLICKHOUSE_PASSWORD: admin
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
