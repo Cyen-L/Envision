@@ -1,5 +1,5 @@
 """
-Script to fetch daily total transfer amount from a ClickHouse database.
+Script to fetch top 20 username by total transfer amount within date range from ClickHouse database.
 
 Usage:
 python script.py [--sort-by {day, total_amount}] [--descending]
@@ -18,13 +18,15 @@ def main():
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--sort-by', default = 'day')
+    parser.add_argument('--start-date', default = '2025-05-01')
+    parser.add_argument('--end-date', default = '2025-06-01')
+    parser.add_argument('--sort-by', default = 'username')
     parser.add_argument('--descending', action = 'store_false')
     args = parser.parse_args()
 
     # Test if the input argument is valid
-    if args.sort_by not in ('day', 'total_amount'):
-        print("Error: --sort-by must be 'day' or 'total_amount'")
+    if args.sort_by not in ('username', 'total_amount'):
+        print("Error: --sort-by must be 'username' or 'total_amount'")
         sys.exit(1)
 
     # Connect to ClickHouse
@@ -32,10 +34,12 @@ def main():
 
     # Construct the SQL query
     query = f"""
-        SELECT toDate(transaction_time) AS day, SUM(transfer_amount) AS total_amount 
-        FROM olap_db.transactions 
-        GROUP BY day 
-        ORDER BY {args.sort_by} {"ASC" if args.descending else "DESC"};
+        SELECT username, sum(transfer_amount) AS total_amount
+        FROM olap_db.transactions
+        WHERE transaction_time BETWEEN '{args.start_date} 00:00:00.000' AND '{args.end_date} 23:59:59.999'
+        GROUP BY username
+        ORDER BY {args.sort_by} {"ASC" if args.descending else "DESC"}
+        LIMIT 20;
     """
 
     # Fault-tolerant execution of the query
@@ -52,7 +56,7 @@ def main():
     else:
 
         # Print the result in a readable format
-        print("\n=== C2: Daily Total Transfer Amount ===")
+        print("\n=== C4: Top 20 username by total transfer amount within date range ===")
         if result:
             for row in result:
                 print(f"{row[0]}\t{row[1]}")

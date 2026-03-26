@@ -1,8 +1,8 @@
 """
-Script to fetch daily total transfer amount from a ClickHouse database.
+Script to fetch daily counts by currency from a ClickHouse database.
 
 Usage:
-python script.py [--sort-by {day, total_amount}] [--descending]
+python script.py [--sort-by {day, currency_code, total_count}] [--descending]
 
 """
 
@@ -14,28 +14,35 @@ from clickhouse_driver import Client
 # Import from utils.py
 from utils import run_query, get_client, CONFIG
 
+# Initialize allowed columns for sorting
+ALLOWED_COLUMNS = ['day', 'currency_code', 'total_count']
+
+# Function to parse the --sort-by argument and validate it
+def parse_sort_by(s):
+    cols = [c.strip() for c in s.split(',')]
+    for col in cols:
+        if col not in ALLOWED_COLUMNS:
+            raise argparse.ArgumentTypeError(f"Invalid column: {col}. Allowed: {', '.join(ALLOWED_COLUMNS)}")
+    return cols
+
+
 def main():
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--sort-by', default = 'day')
+    parser.add_argument('--sort-by', type=parse_sort_by, default=['day', 'currency_code'])
     parser.add_argument('--descending', action = 'store_false')
     args = parser.parse_args()
-
-    # Test if the input argument is valid
-    if args.sort_by not in ('day', 'total_amount'):
-        print("Error: --sort-by must be 'day' or 'total_amount'")
-        sys.exit(1)
 
     # Connect to ClickHouse
     client = get_client(CONFIG)
 
     # Construct the SQL query
     query = f"""
-        SELECT toDate(transaction_time) AS day, SUM(transfer_amount) AS total_amount 
+        SELECT toDate(transaction_time) AS day, currency_code, COUNT(*) AS total_count 
         FROM olap_db.transactions 
-        GROUP BY day 
-        ORDER BY {args.sort_by} {"ASC" if args.descending else "DESC"};
+        GROUP BY day, currency_code 
+        ORDER BY {', '.join(f"{col} {"ASC" if args.descending else "DESC"}" for col in args.sort_by)};
     """
 
     # Fault-tolerant execution of the query
@@ -52,10 +59,10 @@ def main():
     else:
 
         # Print the result in a readable format
-        print("\n=== C2: Daily Total Transfer Amount ===")
+        print("\n=== C3: Daily Counts by Currency ===")
         if result:
             for row in result:
-                print(f"{row[0]}\t{row[1]}")
+                print(f"{row[0]}\t{row[1]}\t{row[2]}")
     
     # Finally block to discounnect the Clickhouse
     finally:
