@@ -33,7 +33,7 @@ def main():
     # Construct the SQL query
     query = f"""
         SELECT toDate(transaction_time) AS day, COUNT(*) AS total_count
-        FROM olap_db.transactions
+        FROM {CONFIG['clickhouse']['database']}.transactions
         GROUP BY day
         ORDER BY {args.sort_by} {"ASC" if args.descending else "DESC"};
     """

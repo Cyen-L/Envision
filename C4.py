@@ -35,7 +35,7 @@ def main():
     # Construct the SQL query
     query = f"""
         SELECT username, sum(transfer_amount) AS total_amount
-        FROM olap_db.transactions
+        FROM {CONFIG['clickhouse']['database']}.transactions
         WHERE transaction_time BETWEEN '{args.start_date} 00:00:00.000' AND '{args.end_date} 23:59:59.999'
         GROUP BY username
         ORDER BY {args.sort_by} {"ASC" if args.descending else "DESC"}

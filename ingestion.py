@@ -6,6 +6,7 @@ Columns: transaction_id, bill_id, site_id, username, item_id,
          currency_code, transfer_amount, transaction_time_ms
 """
 
+# Import necessary libraries
 import json
 import os
 import time

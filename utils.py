@@ -44,3 +44,12 @@ def load_config():
 
 # Load config once when the module is imported
 CONFIG = load_config()
+
+def table_exists(client, table_name):
+    """Check if a table exists in the target database."""
+    query = f"""
+        SELECT 1 FROM system.tables
+        WHERE database = '{CONFIG['clickhouse']['database']}' AND name = '{table_name}'
+    """
+    result = run_query(client, query)
+    return bool(result)

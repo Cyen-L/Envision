@@ -40,7 +40,7 @@ def main():
     # Construct the SQL query
     query = f"""
         SELECT toDate(transaction_time) AS day, currency_code, COUNT(*) AS total_count 
-        FROM olap_db.transactions 
+        FROM {CONFIG['clickhouse']['database']}.transactions 
         GROUP BY day, currency_code 
         ORDER BY {', '.join(f"{col} {"ASC" if args.descending else "DESC"}" for col in args.sort_by)};
     """
