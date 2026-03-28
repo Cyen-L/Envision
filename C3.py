@@ -2,7 +2,7 @@
 Script to fetch daily counts by currency from a ClickHouse database.
 
 Usage:
-python script.py [--sort-by {day, currency_code, total_count}] [--descending]
+python C3.py [--sort-by {day, currency_code, total_count}] [--descending]
 
 """
 

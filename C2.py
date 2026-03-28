@@ -2,7 +2,7 @@
 Script to fetch daily total transfer amount from a ClickHouse database.
 
 Usage:
-python script.py [--sort-by {day, total_amount}] [--descending]
+python C2.py [--sort-by {day, total_amount}] [--descending]
 
 """
 

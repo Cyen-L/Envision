@@ -1,8 +1,8 @@
 """
-Script to fetch top 20 username by total transfer amount within date range from ClickHouse database.
+Script to fetch daily username count by site ID within date range from ClickHouse database.
 
 Usage:
-python C4.py [--start-date {YYYY-MM-DD}] [--end-date {YYYY-MM-DD}] [--sort-by {day, total_amount}] [--descending]
+python Bonus-1.py [--start-date {YYYY-MM-DD}] [--end-date {YYYY-MM-DD}] [--site-id]
 
 """
 
@@ -20,27 +20,23 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--start-date', default = '2025-05-01')
     parser.add_argument('--end-date', default = '2025-06-01')
-    parser.add_argument('--sort-by', default = 'username')
-    parser.add_argument('--descending', action = 'store_false')
+    parser.add_argument('--site-id', action = 'store_false')
     args = parser.parse_args()
-
-    # Test if the input argument is valid
-    if args.sort_by not in ('username', 'total_amount'):
-        print("Error: --sort-by must be 'username' or 'total_amount'")
-        sys.exit(1)
 
     # Connect to ClickHouse
     client = get_client(CONFIG)
 
+    # Decide the clause column based on whether site_id is included
+    clause_col = "day" + (", site_id" if args.site_id else "")
+
     # Construct the SQL query
     query = f"""
-        SELECT username, sum(transfer_amount) AS total_amount
+        SELECT toDate(transaction_time) AS {clause_col}, uniq(username) AS total_count
         FROM {CONFIG['clickhouse']['database']}.transactions
         WHERE transaction_time BETWEEN '{args.start_date} 00:00:00.000' AND '{args.end_date} 23:59:59.999'
-        GROUP BY username
-        ORDER BY {args.sort_by} {"ASC" if args.descending else "DESC"}
-        LIMIT 20;
-    """
+        GROUP BY {clause_col}
+        ORDER BY {clause_col};
+        """
 
     # Fault-tolerant execution of the query
     try:
@@ -56,8 +52,12 @@ def main():
     else:
 
         # Print the result in a readable format
-        print("\n=== C4: Top 20 username by total transfer amount within date range ===")
-        if result:
+        if args.site_id:
+            print("\n=== Bonus-1: Daily unique username count by site ID within date range ===")
+            for row in result:
+                print(f"{row[0]}\t{row[1]}\t{row[2]}")
+        else:
+            print("\n=== Bonus-1: Daily unique username count within date range ===")
             for row in result:
                 print(f"{row[0]}\t{row[1]}")
     

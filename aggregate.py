@@ -167,7 +167,7 @@ if __name__ == "__main__":
     client = get_client(CONFIG)
 
     # Create the pre‑aggregated tables
-    #aggregate_agg_username_30min()
+    aggregate_agg_username_30min()
     aggregate_agg_site_daily()
 
     # Disconnect the ClickHouse client

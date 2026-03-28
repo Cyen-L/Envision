@@ -1,0 +1,8 @@
+dwd_transaction_detail_1.json
+dwd_transaction_detail_10.json
+dwd_transaction_detail_11.json
+dwd_transaction_detail_12.json
+dwd_transaction_detail_13.json
+dwd_transaction_detail_14.json
+dwd_transaction_detail_15.json
+dwd_transaction_detail_16.json

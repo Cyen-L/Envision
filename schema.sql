@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS olap_db.transactions (
     item_id           UInt32,
     currency_code     String,
     transfer_amount   Decimal(18, 2),
-    transaction_time  DateTime64(3)
-) ENGINE = MergeTree()
-ORDER BY (site_id, username, transaction_time)
+    transaction_time  DateTime64(3), 
+    _version          UInt64
+) ENGINE = ReplacingMergeTree(_version)
+ORDER BY (site_id, username, transaction_time, _version)
 PARTITION BY toYYYYMM(transaction_time);

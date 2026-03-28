@@ -2,21 +2,37 @@
 import json
 import os
 import time
-import argparse
+from decimal import Decimal
 from datetime import datetime
-from typing import List, Tuple
+from clickhouse_driver import Client
 
 # Import from utils.py
-from utils import get_client, CONFIG
+from utils import get_client, CONFIG, run_query
 
 # Config
 INPUT_DIR = 'json_files'
-HOST = 'localhost'
-PORT = 9000
-USER ='admin'
-PASSWORD ='admin'
-DATABASE ='olap_db'
 BATCH_SIZE = 1000000
+TRACKING_FILE = 'ingestion_tracking.txt'
+
+# Function to load the set of processed files from the tracking file
+def load_processed_files():
+    """Load the set of processed files from the tracking file."""
+    
+    # If the tracking file does not exist, return an empty set
+    if not os.path.exists(TRACKING_FILE):
+        return set()
+    
+    # Read the tracking file and load the processed files into a set
+    with open(TRACKING_FILE, 'r') as f:
+        return set(line.strip() for line in f)
+
+# Function to mark a file as processed by adding it to the tracking file
+def mark_file_processed(filename):
+    """Mark a file as processed by adding it to the tracking file."""
+    
+    # Append the filename to the tracking file
+    with open(TRACKING_FILE, 'a') as f:
+        f.write(filename + '\n')
 
 def parse_time_ms(value):
     """Convert epoch milliseconds (int or string) to datetime object."""
@@ -71,7 +87,7 @@ def process_file(file_path: str, client: Client, batch_size: int = 10000):
             username = str(row[3])
             item_id = int(row[4])
             currency_code = str(row[5])
-            transfer_amount = float(row[6])
+            transfer_amount = Decimal(row[6])
 
             # Parse the time into specific format with function
             transaction_time = parse_time_ms(row[7])
@@ -85,17 +101,25 @@ def process_file(file_path: str, client: Client, batch_size: int = 10000):
                 item_id,
                 currency_code, 
                 transfer_amount, 
-                transaction_time
+                transaction_time, 
+                int(time.time())
             ))
 
             # If the batch size reach the batch size
             if len(batch) >= batch_size:
-            
-                # Execute the input statement to ingest data into database
-                client.execute(
-                    "INSERT INTO olap_db.transactions VALUES",
-                    batch
-                )
+
+                # Fault-tolerant execution of the query
+                try:
+                    
+                    # Execute the input statement to ingest data into database
+                    client.execute(
+                        "INSERT INTO olap_db.transactions VALUES",
+                        batch
+                    )
+                
+                # Exception handling for query execution
+                except Exception as e:
+                    print(f"Error fetching transaction counts: {e}")
 
                 # Add the row number ingested into variable for counting
                 rows_inserted += len(batch)
@@ -105,10 +129,19 @@ def process_file(file_path: str, client: Client, batch_size: int = 10000):
         
         # Handle situation where there is remaining batch
         if batch:
-            client.execute(
-                "INSERT INTO olap_db.transactions VALUES",
-                batch
-            )
+
+            # Fault-tolerant execution of the query
+            try:
+
+                # Execute the input statement to ingest data into database
+                client.execute(
+                    "INSERT INTO olap_db.transactions VALUES",
+                    batch
+                )
+            
+            # Exception handling for query execution
+            except Exception as e:
+                print(f"Error fetching transaction counts: {e}")
             
             # Add the row number ingested into variable for counting
             rows_inserted += len(batch)
@@ -130,18 +163,30 @@ def main():
         total_rows = 0
         start_time = time.time()
 
+        # Load the set of processed files from the tracking file
+        processed_files = load_processed_files()
+
         # Loopn over each file name
         for file_name in json_files:
+
+            # Check if the file has been processed before by looking into the set of processed files
+            if file_name in processed_files:
+                print(f'Skipping {file_name} (already processed)')
+                continue
+
             print(f'Processing {file_name}.....')
 
             # Construct file path
             file_path = os.path.join(INPUT_DIR, file_name)
 
-
+            # Process the file and get the number of rows inserted
             rows = process_file(file_path, client, BATCH_SIZE)
 
             # Counting function for row
             total_rows += rows
+
+            # Mark the file as processed by adding it to the tracking file
+            mark_file_processed(file_name)
         
         # Get the complete time
         end_time = time.time()

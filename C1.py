@@ -2,7 +2,7 @@
 Script to fetch daily transaction counts from a ClickHouse database.
 
 Usage:
-python script.py [--sort-by {day, total_count}] [--descending]
+python C1.py [--sort-by {day, total_count}] [--descending]
 
 """
 
