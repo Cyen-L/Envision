@@ -20,6 +20,7 @@ This project provides a complete data ingestion and aggregation pipeline for tra
 ---
 
 ## Project Structure
+```text
 .
 ├── docker-compose.yml # ClickHouse service definition
 ├── schema.sql # Table schema for raw transactions
@@ -35,7 +36,7 @@ This project provides a complete data ingestion and aggregation pipeline for tra
 ├── Bonus-1.py # Daily username count by site ID (date range)
 ├── config.json # Connection & runtime configuration
 └── json_files/ # Input directory for JSON files
-
+```
 
 ---
 
@@ -92,7 +93,6 @@ This project provides a complete data ingestion and aggregation pipeline for tra
 
 ## PART 0 - Local Docker Environment Setup
 
-### Docker Configuration
 The pipeline uses a single ClickHouse server defined in `docker-compose.yml`. Below is the recommended configuration:
 ```yaml
 version: '3.8'
@@ -118,7 +118,7 @@ services:
 volumes:
   clickhouse_data:
 ```
-#### Key Settings
+### Key Settings
 | Setting                | Purpose                                                                 |
 |------------------------|-------------------------------------------------------------------------|
 | `ports: 8123:8123`     | Exposes ClickHouse Play web UI at `http://localhost:8123/play`          |
@@ -126,16 +126,35 @@ volumes:
 | `volumes`              | Persists data across container restarts                                 |
 | `ulimits.nofile`       | Increases file descriptor limit for high‑throughput ingestion           |
 
-All connection parameters are defined in `CONFIG.JSON`, these values can be modified as needed:
-```json
-{
-  "host": "localhost",
-  "port": 9000,
-  "database": "olap_db",
-  "user": "admin",
-  "password": "admin"
-}
+## Part A - Schema & Table Design
+The table serves as the core fact table for an OLAP environment, storing transactional data with support for time-series analysis.
+```sql
+-- Create database if not exists
+CREATE DATABASE IF NOT EXISTS olap_db;
 
+-- Raw transactions table
+CREATE TABLE IF NOT EXISTS olap_db.transactions (
+    transaction_id    UInt64,
+    bill_id           UInt64,
+    site_id           UInt32,
+    username          String,
+    item_id           UInt32,
+    currency_code     String,
+    transfer_amount   Decimal(18, 2),
+    transaction_time  DateTime64(3), 
+    _version          UInt64
+) ENGINE = ReplacingMergeTree(_version)
+ORDER BY (site_id, username, transaction_time, _version)
+PARTITION BY toYYYYMM(transaction_time);
+```
+| Element                | Rationale                                                                 |
+|------------------------|-------------------------------------------------------------------------|
+| `DateTime64(3)`     | Ensure store timestamps with millisecond precision.          |
+| `Decimal(18,2)`     | Ensures exact precision for monetary values.|
+| `UInt64`              | For IDs and versions to support high cardinality.                                 |
+| `ReplacingMergeTree`       | Handles late‑arriving / duplicate data based on _version           |
 ---
 
-## Database Schema
+
+```sql
+```
