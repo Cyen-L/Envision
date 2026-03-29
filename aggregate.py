@@ -172,17 +172,3 @@ if __name__ == "__main__":
 
     # Disconnect the ClickHouse client
     client.disconnect()
-
-    # 3. (Optional) Populate the tables with data from raw transactions
-    #    Uncomment the lines below to populate with the entire dataset.
-    #    To avoid double‑counting, you can run this script periodically and
-    #    limit the range to newly added data (using timestamps / dates).
-    #
-    # populate_username_30min()   # all data
-    # populate_site_daily()       # all data
-    #
-    # Example: populate only transactions from the last 24 hours
-    # now = datetime.now()
-    # yesterday = now - timedelta(days=1)
-    # populate_username_30min(start_time=yesterday, end_time=now)
-    # populate_site_daily(start_date=yesterday.date(), end_date=now.date())

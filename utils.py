@@ -3,18 +3,27 @@ import sys
 import json
 from clickhouse_driver import Client
 
+# Utility functions for ClickHouse interactions and configuration management
 def run_query(client, query, params=None):
     """Helper to execute a query and print results."""
+
+    # Execute the query and return results, with error handling
     try:
         result = client.execute(query, params=params)
         return result
+    
+    # Handle exceptions during query execution
     except Exception as e:
         print(f"Error executing query: {e}")
         return None
     
 def get_client(CONFIG):
     """Create and return a ClickHouse client."""
+
+    # Attempt to create a ClickHouse client using provided configuration parameters
     try:
+
+        # Create a ClickHouse client using configuration parameters
         client = Client(
             host=CONFIG['clickhouse']['host'],
             port=CONFIG['clickhouse']['port'],
@@ -23,6 +32,8 @@ def get_client(CONFIG):
             database=CONFIG['clickhouse']['database']
         )
         return client
+    
+    # Handle exceptions during client creation
     except Exception as e:
         print(f"Failed to create ClickHouse client: {e}", file=sys.stderr)
         sys.exit(1)
