@@ -23,19 +23,27 @@ Prerequisites
 1. Clone the repository from GitHub into a specific directory
 git clone https://github.com/Cyen-L/Envision.git
 
-2. Download and extract the dataset
-curl -O https://big-data-interview.s3.ap-southeast-2.amazonaws.com/sample_data.zip
+2. Download the sample_data.zip
 wget https://big-data-interview.s3.ap-southeast-2.amazonaws.com/sample_data.zip
-unzip sample_data.zip
-sudo apt install unzip
 
+3. Create json_files directory to store dataset
+mkdir json_files
 
-2. Create and activate a virtual python environment
+4. Extract the dataset into json_files
+tar -xf sample_data.zip -C json_files
+
+5. Create and activate a virtual python environment
 python -m venv env
 source venv/bin/activate
 
-3. Install Python library requirement txt
+6. Install Python library requirement txt
 pip install -r requirements.txt
+
+7. Compose the container with docker-compoase.yml
+docker-compose up
+
+8.
+
 ==============================================
 PART 0 - Local Docker Environment Setup
 Clickhouse Connection Detail
