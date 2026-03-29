@@ -247,6 +247,7 @@ python aggregate.py
 
 #### Querying the Aggregated Tables
 - Table agg_username_30min
+
 | Column                | Description                                                                 |
 |------------------------|-------------------------------------------------------------------------|
 | `window_start` (DateTime64(3))     | The start of the 30‑minute interval, either on the hour (00:00) or half-hour (30:00).          |
@@ -256,6 +257,7 @@ python aggregate.py
 | `total_amount` (Decimal(18,2))       | Sum of transfer_amount.           |
 
 - Table agg_site_daily
+
 | Column                | Description                                                                 |
 |------------------------|-------------------------------------------------------------------------|
 | `day` (Date)     | The date of the aggregation.          |
