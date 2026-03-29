@@ -25,8 +25,8 @@ This project provides a complete data ingestion and aggregation pipeline for tra
   - [C4: Top 20 Usernames by Total Amount (Date Range)](#c4-top-20-usernames-by-total-amount-date-range)
   - [C5 & C6: Pre-aggregation Tables](#c5--c6-pre-aggregation-tables)
 - [Bonus](#bonus)
-- [Bonus 1: Unique usernames per daily](#bonus-1-unique-usernames-per-daily)
-- [Bonus 2: Incremental ingestion (only new files)](#bonus-2-incremental-ingestion-only-new-files)
+  - [Bonus 1: Unique usernames per daily](#bonus-1-unique-usernames-per-daily)
+  - [Bonus 2: Incremental ingestion (only new files)](#bonus-2-incremental-ingestion-only-new-files)
 
 ---
 
