@@ -180,3 +180,48 @@ JSON file → read → validate → convert → batch → INSERT INTO olap_db.tr
 | Throughput       | 119,101 rows/sec           |
 
 ## Part C - Pre-aggregation Tables + Analytics Outputs
+### C1: Daily Total Transaction Count
+`python C1.py [--sort-by {day | total_count}] [--descending]`
+#### SQL Query:
+```sql
+SELECT toDate(transaction_time) AS day, COUNT(*) AS total_count
+FROM olap_db.transactions
+GROUP BY day
+ORDER BY {day|total_count} {ASC | DESC};
+```
+
+### C2: Daily Total Transfer Amount
+`python C2.py [--sort-by {day | total_amount}] [--descending]`
+#### SQL Query:
+```sql
+SELECT toDate(transaction_time) AS day, SUM(transfer_amount) AS total_amount 
+FROM olap_db.transactions 
+GROUP BY day 
+ORDER BY {day | total_amount} {ASC | DESC};
+``
+
+### C3: Daily Count by Currency
+`python C3.py [--sort-by {day | currency_code | total_count}] [--descending]`
+#### SQL Query:
+```sql
+SELECT toDate(transaction_time) AS day, currency_code, COUNT(*) AS total_count 
+FROM olap_db.transactions 
+GROUP BY day, currency_code 
+ORDER BY {day | currency_code | total_count} {ASC | DESC};
+```
+
+### C4: Top 20 Usernames by Total Amount (Date Range)
+`python C4.py [--start-date {YYYY-MM-DD}] [--end-date {YYYY-MM-DD}] [--sort-by {username | total_amount}] [--descending]`
+#### SQL Query:
+```sql
+SELECT username, sum(transfer_amount) AS total_amount
+FROM olap_db.transactions
+WHERE transaction_time BETWEEN '{YYYY-MM-DD} 00:00:00.000' AND '{YYYY-MM-DD} 23:59:59.999'
+GROUP BY username
+ORDER BY {username | total_amount} {ASC | DESC}
+LIMIT 20;
+```
+
+### C5 & C6: Pre-aggregation Tables
+Run aggregation jobs to generate table:
+python aggregate.py
