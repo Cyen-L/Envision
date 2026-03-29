@@ -90,7 +90,42 @@ This project provides a complete data ingestion and aggregation pipeline for tra
 
 ---
 
-## Configuration
+## PART 0 - Local Docker Environment Setup
+
+### Docker Configuration
+The pipeline uses a single ClickHouse server defined in `docker-compose.yml`. Below is the recommended configuration:
+```yaml
+version: '3.8'
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse_server
+    ports:
+      - "8123:8123"   # HTTP interface (ClickHouse Play)
+      - "9000:9000"   # Native TCP interface
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    environment:
+      CLICKHOUSE_DB: olap_db
+      CLICKHOUSE_USER: admin
+      CLICKHOUSE_PASSWORD: admin
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+volumes:
+  clickhouse_data:
+```
+#### Key Settings
+| Setting                | Purpose                                                                 |
+|------------------------|-------------------------------------------------------------------------|
+| `ports: 8123:8123`     | Exposes ClickHouse Play web UI at `http://localhost:8123/play`          |
+| `ports: 9000:9000`     | Exposes native TCP port for `clickhouse-driver` (used by Python scripts)|
+| `volumes`              | Persists data across container restarts                                 |
+| `ulimits.nofile`       | Increases file descriptor limit for high‑throughput ingestion           |
+
 All connection parameters are defined in `CONFIG.JSON`, these values can be modified as needed:
 ```json
 {
