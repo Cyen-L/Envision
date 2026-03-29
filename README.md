@@ -174,14 +174,20 @@ main() – discovers .json files in INPUT_DIR, filters out already processed one
 JSON file → read → validate → convert → batch → INSERT INTO olap_db.transactions
 
 ### Ingest Performance:
+| Parameter                | Value                                                                 |
+|------------------------|-------------------------------------------------------------------------|
 | `batch_size`     | 1,000,000          |
 | Total rows inserted     | 31,094,882|
 | Total time              | 261.08 sec                                 |
 | Throughput       | 119,101 rows/sec           |
 
 ## Part C - Pre-aggregation Tables + Analytics Outputs
+All the analytics outputs and aggregated tables are generated thro Python script. The following shows the usage of the script as well as the SQL statement:
 ### C1: Daily Total Transaction Count
-`python C1.py [--sort-by {day | total_count}] [--descending]`
+#### Python Script:
+```python
+python C1.py [--sort-by {day | total_count}] [--descending]
+```
 #### SQL Query:
 ```sql
 SELECT toDate(transaction_time) AS day, COUNT(*) AS total_count
@@ -191,17 +197,23 @@ ORDER BY {day|total_count} {ASC | DESC};
 ```
 
 ### C2: Daily Total Transfer Amount
-`python C2.py [--sort-by {day | total_amount}] [--descending]`
+#### Python Script:
+```python
+python C2.py [--sort-by {day | total_amount}] [--descending]
+```
 #### SQL Query:
 ```sql
 SELECT toDate(transaction_time) AS day, SUM(transfer_amount) AS total_amount 
 FROM olap_db.transactions 
 GROUP BY day 
 ORDER BY {day | total_amount} {ASC | DESC};
-``
+```
 
 ### C3: Daily Count by Currency
-`python C3.py [--sort-by {day | currency_code | total_count}] [--descending]`
+#### Python Script:
+```python
+python C3.py [--sort-by {day | currency_code | total_count}] [--descending]
+```
 #### SQL Query:
 ```sql
 SELECT toDate(transaction_time) AS day, currency_code, COUNT(*) AS total_count 
@@ -211,7 +223,10 @@ ORDER BY {day | currency_code | total_count} {ASC | DESC};
 ```
 
 ### C4: Top 20 Usernames by Total Amount (Date Range)
-`python C4.py [--start-date {YYYY-MM-DD}] [--end-date {YYYY-MM-DD}] [--sort-by {username | total_amount}] [--descending]`
+#### Python Script:
+```python
+python C4.py [--start-date {YYYY-MM-DD}] [--end-date {YYYY-MM-DD}] [--sort-by {username | total_amount}] [--descending]
+```
 #### SQL Query:
 ```sql
 SELECT username, sum(transfer_amount) AS total_amount
@@ -223,5 +238,27 @@ LIMIT 20;
 ```
 
 ### C5 & C6: Pre-aggregation Tables
-Run aggregation jobs to generate table:
+Python script was used to generate two pre-aggregation tables as requested:
+- agg_username_30min
+- agg_site_daily
+```python
 python aggregate.py
+```
+
+#### Querying the Aggregated Tables
+- Table agg_username_30min
+| Column                | Description                                                                 |
+|------------------------|-------------------------------------------------------------------------|
+| `window_start` (DateTime64(3))     | The start of the 30‑minute interval, either on the hour (00:00) or half-hour (30:00).          |
+| `site_id` (UInt32)     | Unique site identifier.|
+| `username` (String)              | Unique username.                                 |
+| `txn_count` (UInt64)       | Number of transactions in that interval.           |
+| `total_amount` (Decimal(18,2))       | Sum of transfer_amount.           |
+
+- Table agg_site_daily
+| Column                | Description                                                                 |
+|------------------------|-------------------------------------------------------------------------|
+| `day` (Date)     | The date of the aggregation.          |
+| `site_id` (UInt32)     | Unique site identifier.|
+| `txn_count` (UInt64)       | Total transactions for that site on that day.           |
+| `total_amount` (Decimal(18,2))       | Total amount for that site on that day.           |
