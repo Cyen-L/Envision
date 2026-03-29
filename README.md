@@ -10,12 +10,23 @@ This project provides a complete data ingestion and aggregation pipeline for tra
 - [Setup](#setup)
   - [Prerequisites](#prerequisites)
   - [Installation Steps](#installation-steps)
-- [Configuration](#configuration)
-- [Database Schema](#database-schema)
-- [Ingestion Pipeline](#ingestion-pipeline)
-- [Pre‑aggregation Tables](#pre-aggregation-tables)
-- [Analytics Queries](#analytics-queries)
-- [Usage Notes](#usage-notes)
+- [PART 0 - Local Docker Environment Setup](#part-0---local-docker-environment-setup)
+  - [Key Settings](#key-settings)
+- [Part A - Schema & Table Design](#part-a---schema--table-design)
+- [Part B - Ingestion Pipeline](#part-b---ingestion-pipeline)
+  - [Purpose:](#purpose)
+  - [Key Functions:](#key-functions)
+  - [Data Flow:](#data-flow)
+  - [Ingest Performance:](#ingest-performance)
+- [Part C - Pre-aggregation Tables + Analytics Outputs](#part-c---pre-aggregation-tables--Analytics-outputs)
+  - [C1: Daily Total Transaction Count](#c1-daily-total-transaction-count)
+  - [C2: Daily Total Transfer Amount](#c2-daily-total-transfer-amount)
+  - [C3: Daily Count by Currency](#c3-daily-count-by-currency)
+  - [C4: Top 20 Usernames by Total Amount (Date Range)](#c4-top-20-usernames-by-total-amount-date-range)
+  - [C5 & C6: Pre-aggregation Tables](#c5--c6-pre-aggregation-tables)
+- [Bonus](#bonus)
+- [Bonus 1: Unique usernames per daily](#bonus-1-unique-usernames-per-daily)
+- [Bonus 2: Incremental ingestion (only new files)](#bonus-2-incremental-ingestion-only-new-files)
 
 ---
 
@@ -264,3 +275,21 @@ python aggregate.py
 | `site_id` (UInt32)     | Unique site identifier.|
 | `txn_count` (UInt64)       | Total transactions for that site on that day.           |
 | `total_amount` (Decimal(18,2))       | Total amount for that site on that day.           |
+
+## Bonus
+### Bonus 1: Unique usernames per daily
+#### Python Script:
+```python
+python Bonus-1.py [--start-date {YYYY-MM-DD}] [--end-date {YYYY-MM-DD}] [--site-id]
+```
+#### SQL Query:
+```sql
+SELECT toDate(transaction_time) AS day, site_id, uniq(username) AS total_count
+FROM olap_db.transactions
+WHERE transaction_time BETWEEN '{start date} 00:00:00.000' AND '{end date} 23:59:59.999'
+GROUP BY {clause_col}
+ORDER BY {clause_col};
+```
+
+### Bonus 2: Incremental ingestion (only new files)
+Read `ingest.py` section.

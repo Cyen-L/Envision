@@ -20,7 +20,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--start-date', default = '2025-05-01')
     parser.add_argument('--end-date', default = '2025-06-01')
-    parser.add_argument('--site-id', action = 'store_false')
+    parser.add_argument('--site-id', action = 'store_true')
     args = parser.parse_args()
 
     # Connect to ClickHouse
