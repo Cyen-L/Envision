@@ -18,8 +18,24 @@ Prerequisites
 - Python 3.13.12
 - Docker Compose Engine
 - Visual Studio Code
+- Git
+
+1. Clone the repository from GitHub into a specific directory
+git clone https://github.com/Cyen-L/Envision.git
+
+2. Download and extract the dataset
+curl -O https://big-data-interview.s3.ap-southeast-2.amazonaws.com/sample_data.zip
+wget https://big-data-interview.s3.ap-southeast-2.amazonaws.com/sample_data.zip
+unzip sample_data.zip
+sudo apt install unzip
 
 
+2. Create and activate a virtual python environment
+python -m venv env
+source venv/bin/activate
+
+3. Install Python library requirement txt
+pip install -r requirements.txt
 ==============================================
 PART 0 - Local Docker Environment Setup
 Clickhouse Connection Detail
