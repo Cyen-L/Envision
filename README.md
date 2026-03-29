@@ -154,7 +154,29 @@ PARTITION BY toYYYYMM(transaction_time);
 | `UInt64`              | For IDs and versions to support high cardinality.                                 |
 | `ReplacingMergeTree`       | Handles late‑arriving / duplicate data based on _version           |
 ---
+## Part B - Ingestion Pipeline
+Ingestion Script (ingest.py)
+### Purpose:
+Read JSON files and insert them into the transactions table. It keeps a tracking file (ingestion_tracking.txt) of successfully processed files to avoid re‑processing.
 
+### Key Functions:
+process_file(file_path, client, batch_size) – 
+main() – discovers .json files in INPUT_DIR, filters out already processed ones, processes each, and prints an ingestion summary (total rows, time, throughput).
 
-```sql
-```
+| Script                | Function                                                                 |
+|------------------------|-------------------------------------------------------------------------|
+| `load_processed_files()` / `mark_file_processed()`     | Manage the set of already ingested files.          |
+| `parse_time_ms(value)`     | Converts epoch milliseconds (as int or string) to a Python datetime object (ClickHouse expects DateTime64).|
+| `process_file(file_path, client, batch_size)`              | Reads a JSON file, validates each row (must be a list of 8 elements), transforms values to the correct types, and inserts in batches.                                 |
+| `main()`       | Discovers .json files in INPUT_DIR, filters out already processed ones, processes each, and prints an ingestion summary (total rows, time, throughput).           |
+
+### Data Flow:
+JSON file → read → validate → convert → batch → INSERT INTO olap_db.transactions
+
+### Ingest Performance:
+| `batch_size`     | 1,000,000          |
+| Total rows inserted     | 31,094,882|
+| Total time              | 261.08 sec                                 |
+| Throughput       | 119,101 rows/sec           |
+
+## Part C - Pre-aggregation Tables + Analytics Outputs
