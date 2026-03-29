@@ -33,20 +33,20 @@ This project provides a complete data ingestion and aggregation pipeline for tra
 ## Project Structure
 ```text
 .
-├── docker-compose.yml # ClickHouse service definition
-├── schema.sql # Table schema for raw transactions
-├── requirements.txt # Python dependencies
-├── utils.py # Shared utilities (config, client, helpers)
-├── ingest.py # JSON ingestion script
-├── ingestion_tracking.txt # Tracks already processed files
-├── aggregate.py # Builds pre‑aggregation tables
-├── C1.py # Daily total transaction count
-├── C2.py # Daily total transfer amount
-├── C3.py # Daily count by currency
-├── C4.py # Top 20 usernames by amount (date range)
-├── Bonus-1.py # Daily username count by site ID (date range)
-├── config.json # Connection & runtime configuration
-└── json_files/ # Input directory for JSON files
+├── docker-compose.yml          # ClickHouse service definition
+├── schema.sql                  # Table schema for raw transactions
+├── requirements.txt            # Python dependencies
+├── utils.py                    # Shared utilities (config, client, helpers)
+├── ingest.py                   # JSON ingestion script
+├── ingestion_tracking.txt      # Tracks already processed files
+├── aggregate.py                # Builds pre‑aggregation tables
+├── C1.py                       # Daily total transaction count
+├── C2.py                       # Daily total transfer amount
+├── C3.py                       # Daily count by currency
+├── C4.py                       # Top 20 usernames by amount (date range)
+├── Bonus-1.py                  # Daily username count by site ID (date range)
+├── config.json                 # Connection & runtime configuration
+└── json_files/                 # Input directory for JSON files
 ```
 
 ---
